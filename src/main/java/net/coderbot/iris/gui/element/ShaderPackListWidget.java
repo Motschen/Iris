@@ -1,6 +1,5 @@
 package net.coderbot.iris.gui.element;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.coderbot.iris.Iris;
 import net.coderbot.iris.gui.GuiUtil;
 import net.minecraft.client.MinecraftClient;
@@ -10,8 +9,6 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Tickable;
-import net.minecraft.util.math.MathHelper;
 
 import java.io.IOException;
 import java.nio.file.FileSystem;

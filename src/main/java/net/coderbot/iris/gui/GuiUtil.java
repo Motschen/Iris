@@ -8,6 +8,7 @@ import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.sound.PositionedSoundInstance;
@@ -27,7 +28,7 @@ public final class GuiUtil {
         RenderSystem.enableDepthTest();
         RenderSystem.depthFunc(519);
         RenderSystem.enableTexture();
-        bufferBuilder.begin(7, VertexFormats.POSITION_TEXTURE_COLOR);
+        bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
         bufferBuilder.vertex(x, y + height, z).texture(x, y + height / 32.0F).color(64, 64, 64, 255).next();
         bufferBuilder.vertex(x + width, y + height, 0.0D).texture(x + width / 32.0F, y + height / 32.0F).color(64, 64, 64, 255).next();
         bufferBuilder.vertex(x + width, y, z).texture(x + width / 32.0F, y).color(64, 64, 64, 255).next();
@@ -53,7 +54,7 @@ public final class GuiUtil {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferBuilder = tessellator.getBuffer();
         RenderSystem.enableTexture();
-        bufferBuilder.begin(7, VertexFormats.POSITION_TEXTURE_COLOR);
+        bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
         bufferBuilder.vertex(x, y + height, z).texture(u, v + vh).color(r, g, b, a).next();
         bufferBuilder.vertex(x + width, y + height, z).texture(u + uw, v + vh).color(r, g, b, a).next();
         bufferBuilder.vertex(x + width, y, z).texture(u + uw, v).color(r, g, b, a).next();
@@ -82,7 +83,7 @@ public final class GuiUtil {
         BufferBuilder bufferBuilder = tessellator.getBuffer();
         RenderSystem.disableTexture();
         RenderSystem.enableBlend();
-        bufferBuilder.begin(7, VertexFormats.POSITION_TEXTURE_COLOR);
+        bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
         bufferBuilder.vertex(x, y + height, z).texture(0f, 1f).color(r, g, b, a).next();
         bufferBuilder.vertex(x + width, y + height, z).texture(1f, 1f).color(r, g, b, a).next();
         bufferBuilder.vertex(x + width, y, z).texture(1f, 0f).color(r, g, b, a).next();

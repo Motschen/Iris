@@ -16,6 +16,7 @@ import net.coderbot.iris.uniforms.transforms.SmoothedFloat;
 import net.coderbot.iris.uniforms.transforms.SmoothedVec2f;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.render.CameraSubmersionType;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -74,7 +75,7 @@ public final class CommonUniforms {
 			return Vec3d.ZERO;
 		}
 
-		return client.world.method_23777(client.cameraEntity.getBlockPos(), CapturedRenderingState.INSTANCE.getTickDelta());
+		return client.world.method_23777(Vec3d.ofCenter(client.cameraEntity.getBlockPos()), CapturedRenderingState.INSTANCE.getTickDelta());
 	}
 
 	private static float getBlindness() {
@@ -143,11 +144,11 @@ public final class CommonUniforms {
 	}
 
 	private static int isEyeInWater() {
-		FluidState submergedFluid = client.gameRenderer.getCamera().getSubmergedFluidState();
+		CameraSubmersionType submergedFluid = client.gameRenderer.getCamera().getSubmersionType();
 
-		if (submergedFluid.isIn(FluidTags.WATER)) {
+		if (submergedFluid == CameraSubmersionType.WATER) {
 			return 1;
-		} else if (submergedFluid.isIn(FluidTags.LAVA)) {
+		} else if (submergedFluid == CameraSubmersionType.LAVA) {
 			return 2;
 		} else {
 			return 0;
