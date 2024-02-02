@@ -31,7 +31,6 @@ import net.coderbot.iris.gl.program.ProgramImages;
 import net.coderbot.iris.gl.program.ProgramSamplers;
 import net.coderbot.iris.gl.sampler.SamplerHolder;
 import net.coderbot.iris.gl.shader.ShaderCompileException;
-import net.coderbot.iris.gl.state.StateUpdateNotifiers;
 import net.coderbot.iris.gl.sampler.SamplerLimits;
 import net.coderbot.iris.gl.texture.DepthBufferFormat;
 import net.coderbot.iris.gl.texture.TextureType;
@@ -111,6 +110,7 @@ import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 public class NewWorldRenderingPipeline implements WorldRenderingPipeline, CoreWorldRenderingPipeline, RenderTargetStateListener {
 	private final RenderTargets renderTargets;
@@ -149,9 +149,9 @@ public class NewWorldRenderingPipeline implements WorldRenderingPipeline, CoreWo
 	private final SodiumTerrainPipeline sodiumTerrainPipeline;
 	private final ColorSpaceConverter colorSpaceConverter;
 
-	private final ImmutableSet<Integer> flippedBeforeShadow;
-	private final ImmutableSet<Integer> flippedAfterPrepare;
-	private final ImmutableSet<Integer> flippedAfterTranslucent;
+	public final ImmutableSet<Integer> flippedBeforeShadow;
+	public final ImmutableSet<Integer> flippedAfterPrepare;
+	public final ImmutableSet<Integer> flippedAfterTranslucent;
 
 	public boolean isBeforeTranslucent;
 
@@ -187,7 +187,6 @@ public class NewWorldRenderingPipeline implements WorldRenderingPipeline, CoreWo
 	private final ShaderPack pack;
 	private PackShadowDirectives shadowDirectives;
 	private ColorSpace currentColorSpace;
-	private DHCompat dhCompat;
 
 	public NewWorldRenderingPipeline(ProgramSet programSet) throws IOException {
 		ShaderPrinter.resetPrintState();
@@ -206,7 +205,6 @@ public class NewWorldRenderingPipeline implements WorldRenderingPipeline, CoreWo
 		this.shouldRenderMoon = programSet.getPackDirectives().shouldRenderMoon();
 		this.allowConcurrentCompute = programSet.getPackDirectives().getConcurrentCompute();
 		this.frustumCulling = programSet.getPackDirectives().shouldUseFrustumCulling();
-		this.dhCompat = new DHCompat();
 
 		this.resolver = new ProgramFallbackResolver(programSet);
 		this.pack = programSet.getPack();
@@ -486,7 +484,6 @@ public class NewWorldRenderingPipeline implements WorldRenderingPipeline, CoreWo
 			this.shadowRenderer = null;
 		}
 
-		dhCompat.setFramebuffer(renderTargets.createGbufferFramebuffer(ImmutableSet.of(), new int[] { 0 }));
 		// TODO: Create fallback Sodium shaders if the pack doesn't provide terrain shaders
 		//       Currently we use Sodium's shaders but they don't support EXP2 fog underwater.
 		this.sodiumTerrainPipeline = new SodiumTerrainPipeline(this, programSet, createTerrainSamplers,
@@ -496,6 +493,7 @@ public class NewWorldRenderingPipeline implements WorldRenderingPipeline, CoreWo
 
 		this.setup = createSetupComputes(programSet.getSetup(), programSet, TextureStage.SETUP);
 
+		DHCompat.connectNewPipeline(this, shadowDirectives.isDhShadowEnabled().orElse(true));
 		// first optimization pass
 		this.customUniforms.optimise();
 		boolean hasRun = false;
@@ -787,7 +785,7 @@ public class NewWorldRenderingPipeline implements WorldRenderingPipeline, CoreWo
 		IrisSamplers.addNoiseSampler(samplerHolder, this.customTextureManager.getNoiseTexture());
 		IrisSamplers.addCustomImages(samplerHolder, customImages);
 
-		if (isShadowPass || IrisSamplers.hasShadowSamplers(samplerHolder)) {
+		if (IrisSamplers.hasShadowSamplers(samplerHolder)) {
 			if (!isShadowPass) {
 				shadowTargetsSupplier.get();
 			}
@@ -795,7 +793,7 @@ public class NewWorldRenderingPipeline implements WorldRenderingPipeline, CoreWo
 			IrisSamplers.addShadowSamplers(samplerHolder, Objects.requireNonNull(shadowRenderTargets), null, separateHardwareSamplers);
 		}
 
-		if (isShadowPass || IrisImages.hasShadowImages(images)) {
+		if ( IrisImages.hasShadowImages(images)) {
 			// Note: hasShadowSamplers currently queries for shadow images too, so the shadow render targets will be
 			// created by this point... that's sorta ugly, though.
 			IrisImages.addShadowColorImages(images, Objects.requireNonNull(shadowRenderTargets), null);
@@ -1231,6 +1229,7 @@ public class NewWorldRenderingPipeline implements WorldRenderingPipeline, CoreWo
 
 		Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
 
+		DHCompat.clearPipeline();
 		renderTargets.destroy();
 
 		customImages.forEach(GlImage::destroy);
@@ -1266,7 +1265,7 @@ public class NewWorldRenderingPipeline implements WorldRenderingPipeline, CoreWo
 
 	@Override
 	public DHCompat getDHCompat() {
-		return dhCompat;
+		return null;
 	}
 
 	protected AbstractTexture getWhitePixel() {
@@ -1286,5 +1285,35 @@ public class NewWorldRenderingPipeline implements WorldRenderingPipeline, CoreWo
 	@Override
 	public void setIsMainBound(boolean bound) {
 		isMainBound = bound;
+	}
+
+	public Optional<ProgramSource> getDHTerrainShader() {
+		return resolver.resolve(ProgramId.DhTerrain);
+	}
+
+	public Optional<ProgramSource> getDHWaterShader() {
+		return resolver.resolve(ProgramId.DhWater);
+	}
+
+	public Optional<ProgramSource> getDHShadowShader() {
+		return resolver.resolve(ProgramId.DhShadow);
+	}
+
+	public CustomUniforms getCustomUniforms() {
+		return customUniforms;
+	}
+
+	public GlFramebuffer createDHFramebuffer(ProgramSource sources, boolean trans) {
+		return renderTargets.createDHFramebuffer(trans ? flippedAfterTranslucent : flippedAfterPrepare,
+			sources.getDirectives().getDrawBuffers());
+	}
+
+	public GlFramebuffer createDHFramebufferShadow(ProgramSource sources) {
+
+		return shadowRenderTargets.createDHFramebuffer(ImmutableSet.of(), new int[]{0, 1});
+	}
+
+	public boolean hasShadowRenderTargets() {
+		return shadowRenderTargets != null;
 	}
 }
