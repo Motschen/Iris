@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import com.mojang.blaze3d.platform.GlDebug;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.sun.jna.platform.unix.LibC;
+import net.coderbot.iris.compat.dh.DHCompat;
 import net.coderbot.iris.config.IrisConfig;
 import net.coderbot.iris.gl.GLDebug;
 import net.coderbot.iris.gl.shader.ShaderCompileException;
@@ -208,6 +209,8 @@ public class Iris {
 
 		// Only load the shader pack when we can access OpenGL
 		loadShaderpack();
+
+		DHCompat.run();
 	}
 
 	public static void duringRenderSystemInit() {

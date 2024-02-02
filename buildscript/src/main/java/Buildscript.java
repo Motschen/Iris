@@ -101,7 +101,14 @@ public class Buildscript extends SimpleFabricProject {
 
 		jij(d.addMaven(Maven.MAVEN_CENTRAL, new MavenId("io.github.douira:glsl-transformer:2.0.0-pre13"), ModDependencyFlag.COMPILE, ModDependencyFlag.RUNTIME));
 		jij(d.addMaven(Maven.MAVEN_CENTRAL, new MavenId("org.antlr:antlr4-runtime:4.11.1"), ModDependencyFlag.COMPILE, ModDependencyFlag.RUNTIME));
-		d.addMaven("https://api.modrinth.com/maven", new MavenId("maven.modrinth", "distanthorizons", "2.0.0-a-1.18.2"), ModDependencyFlag.COMPILE);
+		d.add(new JavaJarDependency(
+			// Note: using the full jar is NOT recommended since mixing into DH may cause issues when DH refactors or moves to different MC versions
+			// using the API should prevent these sorts of issues and improve mod compatibility
+			//getProjectDir().resolve("custom_sodium").resolve("DistantHorizons-fabric-2.0.2-a-dev-1.20.4.jar"), // DH full jar
+			getProjectDir().resolve("custom_sodium").resolve("DistantHorizons-api-2.0.2-a-dev-1.20.1.jar"),
+			//null, // DH full jar
+			getProjectDir().resolve("custom_sodium").resolve("DistantHorizons-api-2.0.2-a-dev-1.20.1-sources.jar"),
+			new MavenId("maven.modrinth", "distanthorizons", "2.0.0-a-1.20.4")), ModDependencyFlag.COMPILE, ModDependencyFlag.RUNTIME);
 
 		if (SODIUM) {
 			d.addMaven(FabricMaven.URL, new MavenId(FabricMaven.GROUP_ID + ".fabric-api", "fabric-api-base", "0.4.17+93d8cb8253"), ModDependencyFlag.COMPILE, ModDependencyFlag.RUNTIME);
@@ -114,10 +121,10 @@ public class Buildscript extends SimpleFabricProject {
 			if (CUSTOM_SODIUM) {
 				d.add(new JavaJarDependency(getProjectDir().resolve("custom_sodium").resolve(customSodiumName).toAbsolutePath(), null, new MavenId("me.jellysquid.mods", "sodium-fabric", customSodiumName.replace("sodium-fabric-", ""))), ModDependencyFlag.COMPILE, ModDependencyFlag.RUNTIME);
 			} else {
-				d.addMaven("https://api.modrinth.com/maven", new MavenId("maven.modrinth", "sodium", "mc1.20.1-0.5.7"), ModDependencyFlag.COMPILE, ModDependencyFlag.RUNTIME);
+				d.addMaven("https://api.modrinth.com/maven", new MavenId("maven.modrinth", "sodium", "mc1.20.1-0.5.8"), ModDependencyFlag.COMPILE, ModDependencyFlag.RUNTIME);
 			}
 		} else {
-			d.addMaven("https://api.modrinth.com/maven", new MavenId("maven.modrinth", "sodium", "mc1.20.1-0.5.7"), ModDependencyFlag.COMPILE);
+			d.addMaven("https://api.modrinth.com/maven", new MavenId("maven.modrinth", "sodium", "mc1.20.1-0.5.8"), ModDependencyFlag.COMPILE);
 		}
 	}
 

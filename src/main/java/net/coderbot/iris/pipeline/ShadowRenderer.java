@@ -10,20 +10,16 @@ import net.coderbot.batchedentityrendering.impl.FullyBufferedMultiBufferSource;
 import net.coderbot.batchedentityrendering.impl.MemoryTrackingRenderBuffers;
 import net.coderbot.batchedentityrendering.impl.RenderBuffersExt;
 import net.coderbot.iris.Iris;
+import net.coderbot.iris.compat.dh.DHCompat;
 import net.coderbot.iris.gl.IrisRenderSystem;
-import net.coderbot.iris.gl.program.ComputeProgram;
-import net.coderbot.iris.gl.texture.DepthCopyStrategy;
 import net.coderbot.iris.gui.option.IrisVideoSettings;
 import net.coderbot.iris.mixin.LevelRendererAccessor;
-import net.coderbot.iris.shaderpack.ComputeSource;
-import net.coderbot.iris.shaderpack.OptionalBoolean;
 import net.coderbot.iris.shaderpack.PackDirectives;
 import net.coderbot.iris.shaderpack.PackShadowDirectives;
 import net.coderbot.iris.shaderpack.ProgramSource;
 import net.coderbot.iris.shaderpack.ShadowCullState;
 import net.coderbot.iris.shadows.ShadowMatrices;
 import net.coderbot.iris.shadows.CullingDataCache;
-import net.coderbot.iris.shadows.Matrix4fAccess;
 import net.coderbot.iris.shadows.ShadowCompositeRenderer;
 import net.coderbot.iris.shadows.ShadowRenderTargets;
 import net.coderbot.iris.shadows.ShadowRenderingState;
@@ -57,7 +53,6 @@ import org.joml.Vector4f;
 import org.lwjgl.opengl.ARBTextureSwizzle;
 import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.GL30C;
-import org.lwjgl.opengl.GL43C;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -69,14 +64,15 @@ public class ShadowRenderer {
 	public static List<BlockEntity> visibleBlockEntities;
 	public static int renderDistance;
 
-	private final float halfPlaneLength;
+    private final float halfPlaneLength;
 	private final float voxelDistance;
 	private final float renderDistanceMultiplier;
 	private final float entityShadowDistanceMultiplier;
 	private final int resolution;
 	private final float intervalSize;
 	private final Float fov;
-	public static Matrix4f MODELVIEW;
+	public static Matrix4f MODELVIEW = new Matrix4f();
+	public static Matrix4f PROJECTION = new Matrix4f();
 
 	private final ShadowRenderTargets targets;
 	private final ShadowCullState packCullingState;
@@ -94,6 +90,7 @@ public class ShadowRenderer {
 	private final String debugStringOverall;
 	private FrustumHolder terrainFrustumHolder;
 	private FrustumHolder entityFrustumHolder;
+	public static boolean RENDER_DH_SHADOW;
 	private String debugStringTerrain = "(unavailable)";
 	private int renderedShadowEntities = 0;
 	private int renderedShadowBlockEntities = 0;
@@ -131,6 +128,8 @@ public class ShadowRenderer {
 
 		this.fov = shadowDirectives.getFov();
 		this.targets = shadowRenderTargets;
+
+		this.RENDER_DH_SHADOW = shadowDirectives.isDhShadowEnabled().orElse(true);
 
 		if (shadow != null) {
 			// Assume that the shader pack is doing voxelization if a geometry shader is detected.
@@ -423,6 +422,7 @@ public class ShadowRenderer {
 		boolean regenerateClouds = levelRenderer.shouldRegenerateClouds();
 		((LevelRenderer) levelRenderer).needsUpdate();
 		levelRenderer.setShouldRegenerateClouds(regenerateClouds);
+		setupShadowViewport();
 
 		// Execute the vanilla terrain setup / culling routines using our shadow frustum.
 		levelRenderer.invokeSetupRender(playerCamera, terrainFrustumHolder.getFrustum(), false, false);
@@ -436,7 +436,6 @@ public class ShadowRenderer {
 
 		levelRenderer.getLevel().getProfiler().popPush("terrain");
 
-		setupShadowViewport();
 
 		// Set up our orthographic projection matrix and load it into RenderSystem
 		Matrix4f shadowProjection;
@@ -446,6 +445,8 @@ public class ShadowRenderer {
 		} else {
 			shadowProjection = ShadowMatrices.createOrthoMatrix(halfPlaneLength);
 		}
+
+		PROJECTION = shadowProjection;
 
 		IrisRenderSystem.setShadowProjection(shadowProjection);
 
@@ -457,6 +458,8 @@ public class ShadowRenderer {
 		//
 		// TODO: Better way of preventing light from leaking into places where it shouldn't
 		RenderSystem.disableCull();
+
+		RenderSystem.viewport(0, 0, resolution, resolution);
 
 		// Render all opaque terrain unless pack requests not to
 		if (shouldRenderTerrain) {
@@ -532,6 +535,10 @@ public class ShadowRenderer {
 		// It doesn't matter a ton, since this just means that they won't be sorted in the normal rendering pass.
 		// Just something to watch out for, however...
 		if (shouldRenderTranslucent) {
+			if (RENDER_DH_SHADOW) {
+				DHCompat.renderShadowTranslucent();
+			}
+
 			levelRenderer.invokeRenderChunkLayer(RenderType.translucent(), modelView, cameraX, cameraY, cameraZ, shadowProjection);
 		}
 
