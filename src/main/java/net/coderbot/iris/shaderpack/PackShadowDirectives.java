@@ -25,6 +25,8 @@ public class PackShadowDirectives {
 	// Use a boxed form so we can use null to indicate that there is not an FOV specified.
 	private Float fov;
 	private float distance;
+	private float nearPlane;
+	private float farPlane;
 	private float voxelDistance;
 	private float distanceRenderMul;
 	private float entityShadowDistanceMul;
@@ -60,6 +62,8 @@ public class PackShadowDirectives {
 		// shadowRenderDistanceMul to a nonzero value, since having a high shadow render distance will impact
 		// performance quite heavily on most systems.
 		this.distance = 160.0f;
+		this.nearPlane = 0.05f;
+		this.farPlane = 256.0f;
 		this.voxelDistance = 0.0f;
 
 		// By default, shadows are not culled based on distance from the player. However, pack authors may
@@ -128,6 +132,14 @@ public class PackShadowDirectives {
 
 	public float getDistance() {
 		return distance;
+	}
+
+	public float getNearPlane() {
+		return nearPlane;
+	}
+
+	public float getFarPlane() {
+		return farPlane;
 	}
 
 	public float getVoxelDistance() {
@@ -199,6 +211,8 @@ public class PackShadowDirectives {
 
 		directives.acceptCommentFloatDirective("SHADOWHPL", distance -> this.distance = distance);
 		directives.acceptConstFloatDirective("shadowDistance", distance -> this.distance = distance);
+		directives.acceptConstFloatDirective("shadowNearPlane", nearPlane -> this.nearPlane = nearPlane);
+		directives.acceptConstFloatDirective("shadowFarPlane", farPlane -> this.farPlane = farPlane);
 		directives.acceptConstFloatDirective("voxelDistance", distance -> this.voxelDistance = distance);
 
 		directives.acceptConstFloatDirective("entityShadowDistanceMul", distance -> this.entityShadowDistanceMul = distance);

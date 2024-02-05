@@ -1,5 +1,6 @@
 package net.coderbot.iris.compat.dh;
 
+import com.google.common.primitives.Ints;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.seibel.distanthorizons.api.DhApi;
 import com.seibel.distanthorizons.coreapi.util.math.Vec3f;
@@ -7,6 +8,7 @@ import net.coderbot.iris.Iris;
 import net.coderbot.iris.gbuffer_overrides.matching.InputAvailability;
 import net.coderbot.iris.gl.IrisRenderSystem;
 import net.coderbot.iris.gl.blending.BlendModeOverride;
+import net.coderbot.iris.gl.blending.BufferBlendOverride;
 import net.coderbot.iris.gl.program.ProgramImages;
 import net.coderbot.iris.gl.program.ProgramSamplers;
 import net.coderbot.iris.gl.program.ProgramUniforms;
@@ -31,6 +33,8 @@ import org.lwjgl.opengl.GL43C;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class IrisLodRenderProgram {
@@ -51,14 +55,17 @@ public class IrisLodRenderProgram {
 	private final ProgramSamplers samplers;
 	private final ProgramImages images;
 	private final BlendModeOverride blend;
+	private final BufferBlendOverride[] bufferBlendOverrides;
 
 	// This will bind  AbstractVertexAttribute
-	private IrisLodRenderProgram(String name, boolean isShadowPass, boolean translucent, BlendModeOverride override, String vertex, String tessControl, String tessEval, String geometry, String fragment, CustomUniforms customUniforms, NewWorldRenderingPipeline pipeline) {
+	private IrisLodRenderProgram(String name, boolean isShadowPass, boolean translucent, BlendModeOverride override, BufferBlendOverride[] bufferBlendOverrides, String vertex, String tessControl, String tessEval, String geometry, String fragment, CustomUniforms customUniforms, NewWorldRenderingPipeline pipeline) {
 		id = GL43C.glCreateProgram();
 
 		GL32.glBindAttribLocation(this.id, 0, "vPosition");
-		GL32.glBindAttribLocation(this.id, 1, "color");
+		GL32.glBindAttribLocation(this.id, 1, "iris_color");
 		GL32.glBindAttribLocation(this.id, 2, "irisExtra");
+
+		this.bufferBlendOverrides = bufferBlendOverrides;
 
 		GlShader vert = new GlShader(ShaderType.VERTEX, name + ".vsh", vertex);
 		GL43C.glAttachShader(id, vert.getHandle());
@@ -146,7 +153,17 @@ public class IrisLodRenderProgram {
 			.addSources(transformed)
 			.setName("dh_" + name)
 			.print();
-		return new IrisLodRenderProgram(name, isShadowPass, translucent, source.getDirectives().getBlendModeOverride().orElse(null), vertex, tessControl, tessEval, geometry, fragment, uniforms, pipeline);
+
+		List<BufferBlendOverride> bufferOverrides = new ArrayList<>();
+
+		source.getDirectives().getBufferBlendOverrides().forEach(information -> {
+			int index = Ints.indexOf(source.getDirectives().getDrawBuffers(), information.getIndex());
+			if (index > -1) {
+				bufferOverrides.add(new BufferBlendOverride(index, information.getBlendMode()));
+			}
+		});
+
+		return new IrisLodRenderProgram(name, isShadowPass, translucent, source.getDirectives().getBlendModeOverride().orElse(null), bufferOverrides.toArray(BufferBlendOverride[]::new), vertex, tessControl, tessEval, geometry, fragment, uniforms, pipeline);
 	}
 
 	// Noise Uniforms
@@ -185,6 +202,10 @@ public class IrisLodRenderProgram {
 	public void bind() {
 		GL43C.glUseProgram(id);
 		if (blend != null) blend.apply();
+
+		for (BufferBlendOverride override : bufferBlendOverrides) {
+			override.apply();
+		}
 	}
 
 	public void unbind() {

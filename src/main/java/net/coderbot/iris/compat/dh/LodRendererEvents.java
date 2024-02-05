@@ -242,7 +242,7 @@ public class LodRendererEvents {
 				}
 
 
-				// opaque
+                // opaque
 				if (event.value.renderPass == EDhApiRenderPass.OPAQUE) {
 					float partialTicks = event.value.partialTicks;
 
