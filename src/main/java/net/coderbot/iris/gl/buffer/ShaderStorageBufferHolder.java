@@ -6,13 +6,17 @@ import net.coderbot.iris.gl.IrisRenderSystem;
 import net.coderbot.iris.gl.sampler.SamplerLimits;
 import org.lwjgl.opengl.GL43C;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 public class ShaderStorageBufferHolder {
 	private int cachedWidth;
 	private int cachedHeight;
 	private ShaderStorageBuffer[] buffers;
 	private boolean destroyed;
+
+	private static List<ShaderStorageBuffer> activeBuffers = new ArrayList<>();
 
 	public ShaderStorageBufferHolder(Int2ObjectArrayMap<ShaderStorageInfo> overrides, int width, int height) {
 		destroyed = false;
@@ -29,6 +33,7 @@ public class ShaderStorageBufferHolder {
 			}
 
 			buffers[index] = new ShaderStorageBuffer(index, bufferInfo);
+			activeBuffers.add(buffers[index]);
 			int buffer = buffers[index].getId();
 
 			if (bufferInfo.relative()) {
@@ -48,7 +53,9 @@ public class ShaderStorageBufferHolder {
 			cachedWidth = width;
 			cachedHeight = height;
 			for (ShaderStorageBuffer buffer : buffers) {
-				buffer.resizeIfRelative(width, height);
+				if (buffer != null) {
+					buffer.resizeIfRelative(width, height);
+				}
 			}
 		}
 	}
@@ -63,16 +70,26 @@ public class ShaderStorageBufferHolder {
 		}
 
 		for (ShaderStorageBuffer buffer : buffers) {
-			buffer.bind();
+			if (buffer != null) {
+				buffer.bind();
+			}
 		}
 	}
 
 	public void destroyBuffers() {
 		for (ShaderStorageBuffer buffer : buffers) {
-			buffer.destroy();
+			if (buffer != null) {
+				buffer.destroy();
+				activeBuffers.remove(buffer);
+			}
 		}
 		buffers = null;
 		destroyed = true;
+	}
+
+	public static void deleteAllBuffers() {
+		activeBuffers.forEach(ShaderStorageBuffer::destroy);
+		activeBuffers.clear();
 	}
 
 	private static class OutOfVideoMemoryError extends RuntimeException {
