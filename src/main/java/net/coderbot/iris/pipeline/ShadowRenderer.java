@@ -60,7 +60,8 @@ import java.util.List;
 import java.util.Objects;
 
 public class ShadowRenderer {
-	public static boolean ACTIVE = false;
+    public static Frustum FRUSTUM;
+    public static boolean ACTIVE = false;
 	public static List<BlockEntity> visibleBlockEntities;
 	public static int renderDistance;
 
@@ -401,6 +402,8 @@ public class ShadowRenderer {
 		levelRenderer.getLevel().getProfiler().push("initialize frustum");
 
 		terrainFrustumHolder = createShadowFrustum(renderDistanceMultiplier, terrainFrustumHolder);
+
+		FRUSTUM = terrainFrustumHolder.getFrustum();
 
 		// Determine the player camera position
 		Vector3d cameraPos = CameraUniforms.getUnshiftedCameraPosition();

@@ -108,7 +108,7 @@ public class Buildscript extends SimpleFabricProject {
 			getProjectDir().resolve("custom_sodium").resolve("DistantHorizons-api-2.0.2-a-dev-1.20.4.jar"),
 			//null, // DH full jar
 			getProjectDir().resolve("custom_sodium").resolve("DistantHorizons-api-2.0.2-a-dev-1.20.4-sources.jar"),
-			new MavenId("maven.modrinth", "distanthorizons", "2.0.0-a-1.20.4")), ModDependencyFlag.COMPILE, ModDependencyFlag.RUNTIME);
+			new MavenId("maven.modrinth", "distanthorizons", "2.0.0-a-1.20.4")), ModDependencyFlag.COMPILE);
 
 		if (SODIUM) {
 			d.addMaven(FabricMaven.URL, new MavenId(FabricMaven.GROUP_ID + ".fabric-api", "fabric-api-base", "0.4.17+93d8cb8253"), ModDependencyFlag.COMPILE, ModDependencyFlag.RUNTIME);
