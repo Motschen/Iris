@@ -1,5 +1,7 @@
 package net.coderbot.iris.shadows.frustum.advanced;
 
+import com.seibel.distanthorizons.api.interfaces.override.rendering.IDhApiCullingFrustum;
+import com.seibel.distanthorizons.coreapi.util.math.Mat4f;
 import org.joml.Math;
 import net.coderbot.iris.shadows.frustum.BoxCuller;
 import org.joml.Matrix4f;
@@ -28,7 +30,7 @@ import net.minecraft.world.phys.AABB;
  * are not sensitive to the specific internal ordering of planes and corners, in order to avoid potential bugs at the
  * cost of slightly more computations.</p>
  */
-public class AdvancedShadowCullingFrustum extends Frustum {
+public class AdvancedShadowCullingFrustum extends Frustum implements IDhApiCullingFrustum {
 	private static final int MAX_CLIPPING_PLANES = 13;
 
 	/**
@@ -69,6 +71,8 @@ public class AdvancedShadowCullingFrustum extends Frustum {
 
 	private final Vector3f shadowLightVectorFromOrigin;
 	protected final BoxCuller boxCuller;
+	private int worldMinYDH;
+	private int worldMaxYDH;
 
 	public AdvancedShadowCullingFrustum(Matrix4f playerView, Matrix4f playerProjection, Vector3f shadowLightVectorFromOrigin,
 										BoxCuller boxCuller) {
@@ -379,5 +383,16 @@ public class AdvancedShadowCullingFrustum extends Frustum {
 		}
 
 		return true;
+	}
+
+	@Override
+	public void update(int worldMinBlockY, int worldMaxBlockY, Mat4f worldViewProjection) {
+		this.worldMinYDH = worldMinBlockY;
+		this.worldMaxYDH = worldMaxBlockY;
+	}
+
+	@Override
+	public boolean intersects(int lodBlockPosMinX, int lodBlockPosMinZ, int lodBlockWidth, int lodDetailLevel) {
+		return this.isVisible(lodBlockPosMinX, this.worldMinYDH, lodBlockPosMinZ, lodBlockPosMinX + lodBlockWidth, this.worldMaxYDH, lodBlockPosMinZ + lodBlockWidth) != 0;
 	}
 }

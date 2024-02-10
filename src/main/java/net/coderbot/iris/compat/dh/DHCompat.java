@@ -5,6 +5,7 @@ import net.coderbot.iris.Iris;
 import net.coderbot.iris.pipeline.newshader.NewWorldRenderingPipeline;
 import net.coderbot.iris.uniforms.CapturedRenderingState;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.Minecraft;
 import org.joml.Matrix4f;
 
 import java.lang.invoke.MethodHandle;
@@ -116,7 +117,7 @@ public class DHCompat {
 	}
 
 	public static int getRenderDistance() {
-		if (compatInternalInstance == null) return 0;
+		if (compatInternalInstance == null) return Minecraft.getInstance().options.getEffectiveRenderDistance();
 
 		try {
 			return (int) getRenderDistance.invoke(compatInternalInstance);

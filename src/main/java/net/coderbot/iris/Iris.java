@@ -7,6 +7,7 @@ import com.sun.jna.platform.unix.LibC;
 import net.coderbot.iris.compat.dh.DHCompat;
 import net.coderbot.iris.config.IrisConfig;
 import net.coderbot.iris.gl.GLDebug;
+import net.coderbot.iris.gl.buffer.ShaderStorageBufferHolder;
 import net.coderbot.iris.gl.shader.ShaderCompileException;
 import net.coderbot.iris.gl.shader.StandardMacros;
 import net.coderbot.iris.gui.debug.DebugLoadFailedGridScreen;
@@ -634,6 +635,8 @@ public class Iris {
 		currentPack = null;
 
 		getPipelineManager().destroyPipeline();
+
+		ShaderStorageBufferHolder.deleteAllBuffers();
 
 		// Close the zip filesystem that the shaderpack was loaded from
 		//

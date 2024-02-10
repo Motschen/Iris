@@ -139,8 +139,8 @@ public class DHTransformer {
                 "_vert_normal = irisNormals[irisExtra.y];" +
                 "dhMaterialId = int(irisExtra.x);" +
                 "_vert_tex_light_coord = vec2((float(lights/16u)+0.5) / 16.0, (mod(float(lights), 16.0)+0.5) / 16.0);" +
-                "_vert_color = color; }");
-		addIfNotExists(root, t, tree, "color", Type.F32VEC4, StorageQualifier.StorageType.IN);
+                "_vert_color = iris_color; }");
+		addIfNotExists(root, t, tree, "iris_color", Type.F32VEC4, StorageQualifier.StorageType.IN);
 		addIfNotExists(root, t, tree, "vPosition", Type.U32VEC4, StorageQualifier.StorageType.IN);
 		addIfNotExists(root, t, tree, "irisExtra", Type.U32VEC4, StorageQualifier.StorageType.IN);
 		tree.prependMainFunctionBody(t, "_vert_init();");

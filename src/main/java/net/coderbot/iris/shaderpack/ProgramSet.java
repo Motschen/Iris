@@ -240,7 +240,7 @@ public class ProgramSet implements ProgramSetInterface {
 				gbuffersBasic, gbuffersBeaconBeam, gbuffersTextured, gbuffersTexturedLit, gbuffersTerrain, gbuffersTerrainSolid, gbuffersTerrainCutout,
 				gbuffersDamagedBlock, gbuffersSkyBasic, gbuffersSkyTextured, gbuffersClouds, gbuffersWeather,
 				gbuffersEntities, gbuffersEntitiesTrans, gbuffersEntitiesGlowing, gbuffersGlint, gbuffersEntityEyes, gbuffersBlock, gbuffersBlockTrans,
-				gbuffersHand
+				gbuffersHand, dhShadow, dhTerrain, dhWater
 		));
 
 		for (ComputeSource computeSource : setup) {
