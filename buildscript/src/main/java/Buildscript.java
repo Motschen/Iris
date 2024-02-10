@@ -45,8 +45,8 @@ import org.eclipse.jgit.lib.Constants;
 public class Buildscript extends SimpleFabricProject {
 	static final boolean SODIUM = true;
 	static final boolean CUSTOM_SODIUM = false;
-	static final String MC_VERSION = "1.20.4";
-	static final String customSodiumName = "sodium-fabric-mc23w45a-0.5.3git.86b69d2-dirty.jar";
+	static final String MC_VERSION = "1.20.1";
+	static final String customSodiumName = "sodium-fabric-mc1.20.3-0.5.6git.7a62284.jar";
 
 	private static final String[] SOURCE_SETS = new String[] {
 		"main",
@@ -105,26 +105,26 @@ public class Buildscript extends SimpleFabricProject {
 			// Note: using the full jar is NOT recommended since mixing into DH may cause issues when DH refactors or moves to different MC versions
 			// using the API should prevent these sorts of issues and improve mod compatibility
 			//getProjectDir().resolve("custom_sodium").resolve("DistantHorizons-fabric-2.0.2-a-dev-1.20.4.jar"), // DH full jar
-			getProjectDir().resolve("custom_sodium").resolve("DistantHorizons-api-2.0.2-a-dev-1.20.4.jar"),
+			getProjectDir().resolve("custom_sodium").resolve("DistantHorizons-api-2.0.2-a-dev-1.20.1.jar"),
 			//null, // DH full jar
-			getProjectDir().resolve("custom_sodium").resolve("DistantHorizons-api-2.0.2-a-dev-1.20.4-sources.jar"),
-			new MavenId("maven.modrinth", "distanthorizons", "2.0.0-a-1.20.4")), ModDependencyFlag.COMPILE);
+			getProjectDir().resolve("custom_sodium").resolve("DistantHorizons-api-2.0.2-a-dev-1.20.1-sources.jar"),
+			new MavenId("maven.modrinth", "distanthorizons", "2.0.0-a-1.20.4")), ModDependencyFlag.COMPILE, ModDependencyFlag.RUNTIME);
 
 		if (SODIUM) {
 			d.addMaven(FabricMaven.URL, new MavenId(FabricMaven.GROUP_ID + ".fabric-api", "fabric-api-base", "0.4.17+93d8cb8253"), ModDependencyFlag.COMPILE, ModDependencyFlag.RUNTIME);
 			d.addMaven(FabricMaven.URL, new MavenId(FabricMaven.GROUP_ID + ".fabric-api", "fabric-rendering-data-attachment-v1", "0.3.21+12bfe4ea53"), ModDependencyFlag.COMPILE, ModDependencyFlag.RUNTIME);
 			d.addMaven(FabricMaven.URL, new MavenId(FabricMaven.GROUP_ID + ".fabric-api", "fabric-block-view-api-v2", "1.0.0+92a0d36777"), ModDependencyFlag.COMPILE, ModDependencyFlag.RUNTIME);
 			d.addMaven(FabricMaven.URL, new MavenId(FabricMaven.GROUP_ID + ".fabric-api", "fabric-rendering-fluids-v1", "3.0.13+fbde993d53"), ModDependencyFlag.COMPILE, ModDependencyFlag.RUNTIME);
-			d.addMaven(FabricMaven.URL, new MavenId(FabricMaven.GROUP_ID + ".fabric-api", "fabric-resource-loader-v0", "0.11.14+f31bf881a9"), ModDependencyFlag.COMPILE, ModDependencyFlag.RUNTIME);
+			d.addMaven(FabricMaven.URL, new MavenId(FabricMaven.GROUP_ID + ".fabric-api", "fabric-resource-loader-v0", "0.10.8+12a6ba2c17"), ModDependencyFlag.COMPILE, ModDependencyFlag.RUNTIME);
 			d.addMaven(FabricMaven.URL, new MavenId(FabricMaven.GROUP_ID + ".fabric-api", "fabric-block-view-api-v2", "1.0.0+73761d2e99"), ModDependencyFlag.COMPILE, ModDependencyFlag.RUNTIME);
 
 			if (CUSTOM_SODIUM) {
 				d.add(new JavaJarDependency(getProjectDir().resolve("custom_sodium").resolve(customSodiumName).toAbsolutePath(), null, new MavenId("me.jellysquid.mods", "sodium-fabric", customSodiumName.replace("sodium-fabric-", ""))), ModDependencyFlag.COMPILE, ModDependencyFlag.RUNTIME);
 			} else {
-				d.addMaven("https://api.modrinth.com/maven", new MavenId("maven.modrinth", "sodium", "mc1.20.3-0.5.5"), ModDependencyFlag.COMPILE, ModDependencyFlag.RUNTIME);
+				d.addMaven("https://api.modrinth.com/maven", new MavenId("maven.modrinth", "sodium", "mc1.20.1-0.5.8"), ModDependencyFlag.COMPILE, ModDependencyFlag.RUNTIME);
 			}
 		} else {
-			d.addMaven("https://api.modrinth.com/maven", new MavenId("maven.modrinth", "sodium", "mc1.20.3-0.5.5"), ModDependencyFlag.COMPILE);
+			d.addMaven("https://api.modrinth.com/maven", new MavenId("maven.modrinth", "sodium", "mc1.20.1-0.5.8"), ModDependencyFlag.COMPILE);
 		}
 	}
 

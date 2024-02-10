@@ -23,7 +23,6 @@ import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.navigation.ScreenDirection;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextColor;
@@ -47,26 +46,11 @@ public class ShaderPackOptionList extends IrisContainerObjectSelectionList<Shade
 	private OptionMenuContainer container;
 
 	public ShaderPackOptionList(ShaderPackScreen screen, NavigationController navigation, ShaderPack pack, Minecraft client, int width, int height, int top, int bottom, int left, int right) {
-		super(client, width, bottom, top, bottom, left, right, 24);
+		super(client, width, height, top, bottom, left, right, 24);
 		this.navigation = navigation;
 		this.screen = screen;
-		this.setRenderBackground(false);
 
 		applyShaderPack(pack);
-	}
-
-	@Override
-	protected void renderDecorations(GuiGraphics pAbstractSelectionList0, int pInt1, int pInt2) {
-		// Renders top/bottom dirt
-		int lvInt9 = 32;
-		pAbstractSelectionList0.setColor(0.25F, 0.25F, 0.25F, 1.0F);
-		pAbstractSelectionList0.blit(Screen.BACKGROUND_LOCATION, this.getX(), 0, 0.0F, 0.0F, this.width, this.getY(), 32, 32);
-		pAbstractSelectionList0.blit(Screen.BACKGROUND_LOCATION, this.getX(), this.getBottom(), 0.0F, 0.0F, this.width, this.height, 32, 32);
-		pAbstractSelectionList0.setColor(1.0F, 1.0F, 1.0F, 1.0F);
-		int lvInt10 = 4;
-		pAbstractSelectionList0.fillGradient(RenderType.guiOverlay(), this.getX(), this.getY(), this.getRight(), this.getY() + 4, -16777216, 0, 0);
-		pAbstractSelectionList0.fillGradient(RenderType.guiOverlay(), this.getX(), this.getBottom() - 4, this.getRight(), this.getBottom(), 0, -16777216, 0);
-		super.renderDecorations(pAbstractSelectionList0, pInt1, pInt2);
 	}
 
 	public void applyShaderPack(ShaderPack pack) {
